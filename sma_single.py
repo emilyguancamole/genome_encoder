@@ -105,10 +105,7 @@ def StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension, dec
     # Generate tensor list
     tensor_data_list = []
     for i in range(N):
-        tensor_data_list.append(torch.tensor(dataset[i].astype(np.float32).T)) # get the i-th row
-
-    if not isinstance(comp_num, list):
-        comp_num = [comp_num]
+        tensor_data_list.append(torch.tensor(dataset.iloc[i].astype(np.float32).T)) # get the i-th row
     
     # Training process
     for epoch in range(int(train_epoch)):
