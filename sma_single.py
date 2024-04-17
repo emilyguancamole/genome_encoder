@@ -156,10 +156,10 @@ if __name__ == '__main__':
     # Load data
     dataset = pd.read_csv('Trevino_100.csv', index_col=0)
     print(dataset.head())
-    N = len(dataset) # number of cells
+    N = len(dataset) # number of genes
     print("N",N)
     dropout_rate = 0
-    encoder_dims = [N, 512, 40, 20] # maybe: 43340 cells = input. incorrect: 15469 genes = input
+    encoder_dims = [N, 40, 20] # 15469 genes = input
     decoder_dims = [20, N] # output of decoder is the same as original dim in order to calculate loss
     #* check if decoder needs to start with 40
 
