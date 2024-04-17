@@ -11,6 +11,9 @@ import numpy as np
 from collections import OrderedDict
 import pandas as pd
 import matplotlib.pyplot as plt
+import scanpy as sc
+import h5py
+
 class StructuredAutoencoderNet(nn.Module):
     ## Initialize the network
     def __init__(self, encoder_config, decoder_config, dropout_rate = 0):
@@ -99,7 +102,6 @@ def mse_loss(input_tensor, target_tensor):
 def StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension, decoder_dimension, train_epoch = 1000):
     ''' encoder_dimension: list of dimensions for encoder layers '''
     model = StructuredAutoencoderNet({'dimension' : encoder_dimension}, {'dimension' : decoder_dimension}, dropout_rate=dropout_rate)
-    print(model)
     logging.basicConfig(filename="training_18241_512_40_2000_3e-05.log",level=logging.INFO)
     # Training configuration setting
     # criterion = torch.nn.MSELoss(reduction='sum')
@@ -107,14 +109,8 @@ def StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension, dec
     
     # Generate tensor list #* creates a list of tensors, where each tensor corresponds to gene expr data of a particular gene across all cells (cols)
     tensor_data_list = []
-
-    for i in range(N): 
-        tensor_data_list.append(torch.tensor(dataset.iloc[:,i].astype(np.float32).T)) 
-
-    print("tensor_data_list len", len(tensor_data_list))
-    print("tensor_data_list shape", tensor_data_list[0].shape)
-    print("tensor_data_list shape", tensor_data_list[1].shape)
-
+    for i in range(N): # Loop over cells (columns)
+        tensor_data_list.append(torch.tensor(dataset[:, i].astype(np.float32).T)) 
     
     # Training process
     train_losses = []
@@ -152,33 +148,40 @@ def StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension, dec
     # torch.save(model, "inVitro_sc_autoencoder_18241_512_40_2000_3e-05.pt")
     return embedding_list, recovered_list, train_losses
 
+
+def read_data():
+    
+    with h5py.File('Trevino.h5', 'r') as f:
+        expr_data = f['human_data/block1_values'][:] # contains ['human_data']
+        print("Expression data read:", expr_data.shape)
+
+    anndata = sc.AnnData(X=expr_data) # Convert expr data to Anndata for scanpy
+    print("AnnData shape:", anndata)
+    with h5py.File('Trevino.h5', 'r') as f:
+        cell_names = f['human_data/axis0'][1:].astype(str) # Add cell names
+ 
+    anndata.var_names = cell_names # adding cell names along columns to Anndata
+
+    return anndata.X # expression data as numpy array
+
+
 if __name__ == '__main__':
     # Load data
-    dataset = pd.read_csv('Trevino_100.csv', index_col=0)
-    print(dataset.head())
-    N = len(dataset) # number of genes
+    print("Info: Loading data")
+    # dataset = pd.read_csv('Trevino.csv', index_col=0)
+    expr_data = read_data()
+    N = expr_data.shape[1] # number of cells, 43340
     print("N",N)
-    dropout_rate = 0
-    encoder_dims = [N, 40, 20] # 15469 genes = input
-    decoder_dims = [20, N] # output of decoder is the same as original dim in order to calculate loss
-    #* check if decoder needs to start with 40
+    input_dim = expr_data.shape[0] # number of genes, 15469
+    print("Input dim", input_dim)
 
-    embedding_list, recovered_list, train_losses = StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension=encoder_dims, decoder_dimension=decoder_dims, train_epoch = 10000)
+    dropout_rate = 0
+    encoder_dims = [input_dim, 40, 20] # 15469 genes = input
+    decoder_dims = [20, input_dim] # output of decoder is the same as original dim in order to calculate loss
+    print("Info: Training model")
+    embedding_list, recovered_list, train_losses = StructuredMaskedAutoencoder(expr_data, dropout_rate, N, encoder_dimension=encoder_dims, decoder_dimension=decoder_dims, train_epoch = 10000)
+    np.save("embedding_list.npy", embedding_list)
     # plot train loss and save it
     plt.plot(train_losses)
     plt.savefig("train_loss.png")
     
-
-
-    # model = StructuredAutoencoderNet({'dimension' : encoder_dimension}, {'dimension' : decoder_dimension}, dropout_rate=dropout_rate)
-    # model.encode()
-    # model.decode
-
-    # single encoding layer linear, single decode layer linear
-
-    # one  input vector per cell, ie feed a single cell with all its 15000 genes
-
-
-    # vanishing gradients! use relu instead of sigmoid
-
-    # plot training error
