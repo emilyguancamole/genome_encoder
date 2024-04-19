@@ -176,12 +176,13 @@ if __name__ == '__main__':
     print("Input dim", input_dim)
 
     dropout_rate = 0
-    encoder_dims = [input_dim, 40, 20] # 15469 genes = input
-    decoder_dims = [20, input_dim] # output of decoder is the same as original dim in order to calculate loss
+    train_epochs = 20000
+    encoder_dims = [input_dim, 40] # 15469 genes = input
+    decoder_dims = [40, input_dim] # output of decoder is the same as original dim in order to calculate loss
     print("Info: Training model")
-    embedding_list, recovered_list, train_losses = StructuredMaskedAutoencoder(expr_data, dropout_rate, N, encoder_dimension=encoder_dims, decoder_dimension=decoder_dims, train_epoch = 10000)
-    np.save("embedding_list.npy", embedding_list)
+    embedding_list, recovered_list, train_losses = StructuredMaskedAutoencoder(expr_data, dropout_rate, N, encoder_dimension=encoder_dims, decoder_dimension=decoder_dims, train_epoch=train_epochs)
+    np.save("embedding_list_linear.npy", embedding_list)
     # plot train loss and save it
     plt.plot(train_losses)
-    plt.savefig("train_loss.png")
+    plt.savefig("train_loss_linear.png")
     
