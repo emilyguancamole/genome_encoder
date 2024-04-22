@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import scanpy as sc
 import h5py
 
-"""class StructuredAutoencoderNet(nn.Module):
+class StructuredAutoencoderNet(nn.Module):
     ## Initialize the network
     def __init__(self, encoder_config, decoder_config, dropout_rate = 0):
 
@@ -95,52 +95,16 @@ import h5py
         X = self.encode(X)
         X = self.decode(X)
         
-        return X """
+        return X 
 
-class StructuredAutoencoderNet(nn.Module):
-    ## Initialize the network
-    def __init__(self, encoder_config, decoder_config):
-        super().__init__()
-        self.encoder_config = encoder_config
-        self.decoder_config = decoder_config
-
-        ## Generate encoder layers
-        self.encoder_layers = nn.ModuleList([
-            nn.Linear(encoder_config['dimension'][i], encoder_config['dimension'][i + 1])
-            for i in range(len(encoder_config['dimension']) - 1)
-        ])
-
-        ## Generate decoder layers
-        self.decoder_layers = nn.ModuleList([
-            nn.Linear(decoder_config['dimension'][i], decoder_config['dimension'][i + 1])
-            for i in range(len(decoder_config['dimension']) - 1)
-        ])
-
-    # encode function
-    def encode(self, X):
-        for layer in self.encoder_layers:
-            X = layer(X)
-        return X
-
-    # decode function
-    def decode(self, X):
-        for layer in self.decoder_layers:
-            X = layer(X)
-        return X
-
-    # forward network
-    def forward(self, X):
-        X = self.encode(X)
-        X = self.decode(X)
-        return X
 
     
 def mse_loss(input_tensor, target_tensor):
     return ((input_tensor - target_tensor)**2).sum() / input_tensor.size()[0]
 
-def StructuredMaskedAutoencoder(dataset, N, encoder_dimension, decoder_dimension, train_epoch = 1000):
+def StructuredMaskedAutoencoder(dataset, dropout_rate, N, encoder_dimension, decoder_dimension, train_epoch = 1000):
     ''' encoder_dimension: list of dimensions for encoder layers '''
-    model = StructuredAutoencoderNet({'dimension' : encoder_dimension}, {'dimension' : decoder_dimension})
+    model = StructuredAutoencoderNet({'dimension' : encoder_dimension}, {'dimension' : decoder_dimension}, dropout_rate=dropout_rate)
     logging.basicConfig(filename="training_18241_512_40_2000_3e-05.log",level=logging.INFO)
     # Training configuration setting
     # criterion = torch.nn.MSELoss(reduction='sum')
@@ -221,7 +185,7 @@ if __name__ == '__main__':
     decoder_dims = [20, 512, input_dim] # output of decoder is the same as original dim in order to calculate loss
     print("Info: Training model")
     embedding_list, recovered_list, train_losses = StructuredMaskedAutoencoder(expr_data, dropout_rate, N, encoder_dimension=encoder_dims, decoder_dimension=decoder_dims, train_epoch=train_epochs)
-    np.save("embedding_list_linear.npy", embedding_list)
+    np.save("embedding_list_linear.npy", embedding_list) 
     # plot train loss and save it
     plt.plot(train_losses)
     plt.savefig("train_loss_linear.png")
