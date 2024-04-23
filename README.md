@@ -11,7 +11,7 @@ Data and metadata located in onedrive at the following link:
 `Trevino.h5` is the complete HDF5 data file for the human gene expression data. This was used only for conversion into AnnData format, not for actual analysis. 
 `Trevino_meta.csv` is the metadata containing cell types corresponding to the human gene expression data.
 
-Onedrive Link: CGDA_data
+Onedrive Link: [CGDA_data](https://livejohnshopkins-my.sharepoint.com/:f:/r/personal/gli44_jh_edu/Documents/CGDA_data?csf=1&web=1&e=hhNCVJ)
 
 ### Instructions for Running
 Run the autoencoder using the command `python sma_single.py`. The file saves the embedding list in the specified directory at the end of the main function (change accordingly). The Python notebooks for plotting data can be run by changing the appropriate file paths and hyperparameters in the notebooks.
